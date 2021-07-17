@@ -755,8 +755,9 @@
     <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
     <span class="post-meta-divider">|</span>
 <!-- 不蒜子计数初始值纠正 -->
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.js"></script>
 <script>
-window.onload=function() {
+$(document).ready(function() {
 
     var int = setInterval(fixCount, 50);  // 50ms周期检测函数
     var countOffset = 20000;  // 初始化首次数据
@@ -774,9 +775,8 @@ window.onload=function() {
         }  
     }
        	
-};
+});
 </script> 
-
 
         
 <div class="busuanzi-count">
