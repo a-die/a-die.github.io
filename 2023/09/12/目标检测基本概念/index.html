@@ -1,0 +1,127 @@
+<!DOCTYPE html><html lang="zh-CN"><head><!-- hexo injector head_begin start --><link href="https://cdn.jsdelivr.net/npm/hexo-widget-tree@0.2.2/css/index.css" rel="stylesheet"/><!-- hexo injector head_begin end --><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#0078E7"><meta name="author" content="a碟"><meta name="copyright" content="a碟"><meta name="generator" content="Hexo 6.3.0"><meta name="theme" content="hexo-theme-yun"><title>目标检测基本概念 | a碟のBlog</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@900&amp;display=swap" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/star-markdown-css@0.4.1/dist/yun/yun-markdown.min.css"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/prism-theme-vars/base.css"><script src="https://fastly.jsdelivr.net/npm/scrollreveal/dist/scrollreveal.min.js" defer></script><script>function initScrollReveal() {
+  [".post-card",".markdown-body img"].forEach((target)=> {
+    ScrollReveal().reveal(target);
+  })
+}
+document.addEventListener("DOMContentLoaded", initScrollReveal);
+document.addEventListener("pjax:success", initScrollReveal);
+</script><link rel="icon" type="image/svg+xml" href="/yun.svg"><link rel="mask-icon" href="/yun.svg" color="#0078E7"><link rel="preload" href="/css/hexo-theme-yun.css" as="style"><link rel="prefetch" href="/js/sidebar.js" as="script"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fastly.jsdelivr.net/npm/" crossorigin><script id="yun-config">
+    window.Yun = {}
+    window.CONFIG = {"hostname":"a-die.github.io","root":"/","title":"a碟のBlog","version":"1.10.9","mode":"auto","copycode":true,"page":{"isPost":true},"i18n":{"placeholder":"搜索...","empty":"找不到您查询的内容: ${query}","hits":"找到 ${hits} 条结果","hits_time":"找到 ${hits} 条结果（用时 ${time} 毫秒）"},"anonymous_image":"https://cdn.yunyoujun.cn/img/avatar/none.jpg","say":{"api":"https://el-bot-api.vercel.app/api/words/young"},"fireworks":{"colors":null},"vendors":{"host":"https://fastly.jsdelivr.net/npm/","darken":"https://fastly.jsdelivr.net/npm/darken@1.5.0"}};
+  </script><link rel="stylesheet" href="/css/hexo-theme-yun.css"><script src="/js/hexo-theme-yun.js" type="module"></script><meta name="description" content="写在前面目前暂定方向：  先考虑单无人机，解决多目标检测、定位与目标移动轨迹预测问题。 后续，从多个无人机的视角中检测出同一个物体，多视角的目标检测问题，应该侧重的难点在于多个摄像头的数据融合，视角变化等的问题。  所以目前应该先学习一下目标检测的基本知识，考虑到之前对CV有一些基本的了解，因此直接看目标检测知识。 参考视频&#x2F;书籍：  动手学深度学习(李沐) up主——霹雳吧啦Wz(深度">
+<meta property="og:type" content="article">
+<meta property="og:title" content="目标检测基本概念">
+<meta property="og:url" content="https://a-die.github.io/2023/09/12/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/index.html">
+<meta property="og:site_name" content="a碟のBlog">
+<meta property="og:description" content="写在前面目前暂定方向：  先考虑单无人机，解决多目标检测、定位与目标移动轨迹预测问题。 后续，从多个无人机的视角中检测出同一个物体，多视角的目标检测问题，应该侧重的难点在于多个摄像头的数据融合，视角变化等的问题。  所以目前应该先学习一下目标检测的基本知识，考虑到之前对CV有一些基本的了解，因此直接看目标检测知识。 参考视频&#x2F;书籍：  动手学深度学习(李沐) up主——霹雳吧啦Wz(深度">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-09-12T12:38:49.939Z">
+<meta property="article:modified_time" content="2023-09-12T12:40:13.556Z">
+<meta property="article:author" content="a碟">
+<meta property="article:tag" content="研究生方向">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="目标检测">
+<meta name="twitter:card" content="summary"><script>(function() {
+  if (CONFIG.mode !== 'auto') return
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+  const setting = localStorage.getItem('darken-mode') || 'auto'
+  if (setting === 'dark' || (prefersDark && setting !== 'light'))
+    document.documentElement.classList.toggle('dark', true)
+})()</script></head><body><script src="https://code.iconify.design/2/2.1.1/iconify.min.js"></script><script>// Define global variable
+IconifyProviders = {
+  // Empty prefix: overwrite default API provider configuration
+  '': {
+    // Use custom API first, use Iconify public API as backup
+    resources: [
+        'https://api.iconify.design',
+    ],
+    // Wait for 1 second before switching API hosts
+    rotate: 1000,
+  },
+};</script><script defer src="https://fastly.jsdelivr.net/npm/animejs@latest"></script><script defer src="/js/ui/fireworks.js" type="module"></script><canvas class="fireworks"></canvas><div class="container"><a class="sidebar-toggle hty-icon-button" id="menu-btn"><div class="hamburger hamburger--spin" type="button"><span class="hamburger-box"><span class="hamburger-inner"></span></span></div></a><div class="sidebar-toggle sidebar-overlay"></div><aside class="sidebar"><script src="/js/sidebar.js" type="module"></script><ul class="sidebar-nav"><li class="sidebar-nav-item sidebar-nav-toc hty-icon-button sidebar-nav-active" data-target="post-toc-wrap" title="文章目录"><span class="icon iconify" data-icon="ri:list-ordered"></span></li><li class="sidebar-nav-item sidebar-nav-overview hty-icon-button" data-target="site-overview-wrap" title="站点概览"><span class="icon iconify" data-icon="ri:passport-line"></span></li></ul><div class="sidebar-panel" id="site-overview-wrap"><div class="site-info fix-top"><a class="site-author-avatar" href="/about/" title="a碟"><img width="96" loading="lazy" src="/img/head.jpg" alt="a碟"><span class="site-author-status" title="不想上学">😭</span></a><div class="site-author-name"><a href="/about/">a碟</a></div><span class="site-name">a碟のBlog</span><sub class="site-subtitle"></sub><div class="site-description"></div></div><nav class="site-state"><a class="site-state-item hty-icon-button icon-home" href="/" title="首页"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:home-4-line"></span></span></a><div class="site-state-item"><a href="/archives/" title="归档"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:archive-line"></span></span><span class="site-state-item-count">5</span></a></div><div class="site-state-item"><a href="/categories/" title="分类"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:folder-2-line"></span></span><span class="site-state-item-count">3</span></a></div><div class="site-state-item"><a href="/tags/" title="标签"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:price-tag-3-line"></span></span><span class="site-state-item-count">7</span></a></div><a class="site-state-item hty-icon-button" target="_blank" rel="noopener" href="https://yun.yunyoujun.cn" title="文档"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:settings-line"></span></span></a></nav><hr style="margin-bottom:0.5rem"><div class="links-of-author"><a class="links-of-author-item hty-icon-button" rel="noopener" href="https://github.com/a-die" title="GitHub" target="_blank" style="color:#6e5494"><span class="icon iconify" data-icon="ri:github-line"></span></a><a class="links-of-author-item hty-icon-button" rel="noopener" href="https://www.zhihu.com/people/chi-chen-2-53" title="知乎" target="_blank" style="color:#0084FF"><span class="icon iconify" data-icon="ri:zhihu-line"></span></a><a class="links-of-author-item hty-icon-button" rel="noopener" href="https://space.bilibili.com/23420011" title="哔哩哔哩" target="_blank" style="color:#FF8EB3"><span class="icon iconify" data-icon="ri:bilibili-line"></span></a><a class="links-of-author-item hty-icon-button" rel="noopener" href="993204079@qq.com" title="E-Mail" target="_blank" style="color:#8E71C1"><span class="icon iconify" data-icon="ri:mail-line"></span></a></div><hr style="margin:0.5rem 1rem"><div class="links"><a class="links-item hty-icon-button" href="/links/" title="我的小伙伴们" style="color:dodgerblue"><span class="icon iconify" data-icon="ri:genderless-line"></span></a></div><br><a class="links-item hty-icon-button" id="toggle-mode-btn" href="javascript:;" title="Mode" style="color: #f1cb64"><span class="icon iconify" data-icon="ri:contrast-2-line"></span></a></div><div class="sidebar-panel sidebar-panel-active" id="post-toc-wrap"><div class="post-toc"><div class="post-toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2"><span class="toc-number">1.</span> <span class="toc-text">写在前面</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E5%92%8C%E8%BE%B9%E7%95%8C%E6%A1%86"><span class="toc-number">2.</span> <span class="toc-text">目标检测和边界框</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BE%B9%E7%95%8C%E6%A1%86"><span class="toc-number">2.1.</span> <span class="toc-text">边界框</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%94%9A%E6%A1%86"><span class="toc-number">3.</span> <span class="toc-text">锚框</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%9F%E6%88%90%E5%A4%9A%E4%B8%AA%E9%94%9A%E6%A1%86"><span class="toc-number">3.1.</span> <span class="toc-text">生成多个锚框</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%A4%E5%B9%B6%E6%AF%94"><span class="toc-number">3.2.</span> <span class="toc-text">交并比</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E9%9D%9E%E6%9E%81%E5%A4%A7%E5%80%BC%E6%8A%91%E5%88%B6%E9%A2%84%E6%B5%8B%E8%BE%B9%E7%95%8C%E6%A1%86"><span class="toc-number">3.3.</span> <span class="toc-text">使用非极大值抑制预测边界框</span></a></li></ol></li></ol></div></div></div></aside><main class="sidebar-translate" id="content"><div id="post"><article class="hty-card post-block" itemscope itemtype="https://schema.org/Article" style="--smc-primary:#0078E7;"><link itemprop="mainEntityOfPage" href="https://a-die.github.io/2023/09/12/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/"><span hidden itemprop="author" itemscope itemtype="https://schema.org/Person"><meta itemprop="name" content="a碟"><meta itemprop="description"></span><span hidden itemprop="publisher" itemscope itemtype="https://schema.org/Organization"><meta itemprop="name" content="a碟のBlog"></span><header class="post-header"><h1 class="post-title" itemprop="name headline">目标检测基本概念</h1><div class="post-meta"><div class="post-time" style="display:block"><span class="post-meta-item-icon"><span class="icon iconify" data-icon="ri:calendar-line"></span></span> <time title="创建时间：2023-09-12 20:38:49" itemprop="dateCreated datePublished" datetime="2023-09-12T20:38:49+08:00">2023-09-12</time></div><span class="post-count"><span class="post-symbolcount"><span class="post-meta-item-icon" title="本文字数"><span class="icon iconify" data-icon="ri:file-word-line"></span></span> <span title="本文字数">1.8k</span><span class="post-meta-divider">-</span><span class="post-meta-item-icon" title="阅读时长"><span class="icon iconify" data-icon="ri:timer-line"></span></span> <span title="阅读时长">6m</span></span></span><div class="post-classify"><span class="post-category"> <span class="post-meta-item-icon" style="margin-right:3px;"><span class="icon iconify" data-icon="ri:folder-line"></span></span><span itemprop="about" itemscope itemtype="https://schema.org/Thing"><a class="category-item" href="/categories/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/" style="--text-color:var(--hty-text-color)" itemprop="url" rel="index"><span itemprop="text">目标检测</span></a></span></span><span class="post-tag"><span class="post-meta-divider">-</span><a class="tag-item" href="/tags/%E7%A0%94%E7%A9%B6%E7%94%9F%E6%96%B9%E5%90%91/" style="--text-color:var(--hty-text-color)"><span class="post-meta-item-icon"><span class="icon iconify" data-icon="ri:price-tag-3-line"></span></span><span class="tag-name">研究生方向</span></a><a class="tag-item" href="/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" style="--text-color:var(--hty-text-color)"><span class="post-meta-item-icon"><span class="icon iconify" data-icon="ri:price-tag-3-line"></span></span><span class="tag-name">深度学习</span></a><a class="tag-item" href="/tags/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/" style="--text-color:var(--hty-text-color)"><span class="post-meta-item-icon"><span class="icon iconify" data-icon="ri:price-tag-3-line"></span></span><span class="tag-name">目标检测</span></a></span></div></div></header><section class="post-body" itemprop="articleBody"><div class="post-content markdown-body"><h1 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h1><p>目前暂定方向：</p>
+<ol>
+<li>先考虑<strong>单无人机</strong>，解决<strong>多目标检测</strong>、<strong>定位</strong>与<strong>目标移动轨迹预测</strong>问题。</li>
+<li>后续，从多个无人机的视角中检测出同一个物体，<strong>多视角的目标检测</strong>问题，应该侧重的难点在于<strong>多个摄像头的数据融合</strong>，<strong>视角变化</strong>等的问题。</li>
+</ol>
+<p>所以目前应该先学习一下<strong>目标检测</strong>的基本知识，考虑到之前对CV有一些基本的了解，因此直接看<strong>目标检测</strong>知识。</p>
+<p><strong>参考视频&#x2F;书籍：</strong></p>
+<ol>
+<li>动手学深度学习(李沐)</li>
+<li>up主——霹雳吧啦Wz(深度学习-目标检测篇)，其提供了大量的实战代码，很简单上手(不会目标检测的人也能拿他代码轻松跑通)</li>
+</ol>
+<p>在对目标检测基础知识了解完成之后，开始去<strong>kaggle&#x2F;天池</strong>参加简单的目标检测比赛(参加经典的比赛，论坛讨论人数多，可参考代码多)</p>
+<p>然后读当前方向相关论文，总结idea，得出新idea</p>
+<span id="more"></span>
+
+<h1 id="目标检测和边界框"><a href="#目标检测和边界框" class="headerlink" title="目标检测和边界框"></a>目标检测和边界框</h1><p>在之前所做的图像分类任务中，我们只关注如何识别其类别。然而，在CV领域，我们更感兴趣的不仅是他们的<strong>类别</strong>，还有他们在图像中的<strong>具体位置</strong>。这种任务我们便将它称为目标检测(<em>object detection</em>)或目标识别(<em>object recognition</em>)。</p>
+<p>目标检测目前在多个领域被广泛应用，在无人驾驶里，我们需要通过识别拍摄到的视频图像里的车辆、行人、道路和障碍物的位置来规划行进线路。 机器人也常通过该任务来检测感兴趣的目标。安防领域则需要检测异常目标，如歹徒或者炸弹。</p>
+<h2 id="边界框"><a href="#边界框" class="headerlink" title="边界框"></a>边界框</h2><p>在<em>object detection</em>中，我们经常使用边界框(<em>bounding box</em>)来描述对象的空间位置。</p>
+<p><em>bounding box</em>是矩形的，其表示方法一般有：</p>
+<ol>
+<li>矩形左上角及右下角的x,y坐标决定</li>
+<li>边界框重心的(x,y)轴坐标，以及框的宽度和高度</li>
+</ol>
+<p>两者的转换方式可以在《动手学深度学习》中找到</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#@save</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">box_corner_to_center</span>(<span class="params">boxes</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;从（左上，右下）转换到（中间，宽度，高度）&quot;&quot;&quot;</span></span><br><span class="line">    x1, y1, x2, y2 = boxes[:, <span class="number">0</span>], boxes[:, <span class="number">1</span>], boxes[:, <span class="number">2</span>], boxes[:, <span class="number">3</span>]</span><br><span class="line">    cx = (x1 + x2) / <span class="number">2</span></span><br><span class="line">    cy = (y1 + y2) / <span class="number">2</span></span><br><span class="line">    w = x2 - x1</span><br><span class="line">    h = y2 - y1</span><br><span class="line">    boxes = torch.stack((cx, cy, w, h), axis=-<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">return</span> boxes</span><br><span class="line"></span><br><span class="line"><span class="comment">#@save</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">box_center_to_corner</span>(<span class="params">boxes</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;从（中间，宽度，高度）转换到（左上，右下）&quot;&quot;&quot;</span></span><br><span class="line">    cx, cy, w, h = boxes[:, <span class="number">0</span>], boxes[:, <span class="number">1</span>], boxes[:, <span class="number">2</span>], boxes[:, <span class="number">3</span>]</span><br><span class="line">    x1 = cx - <span class="number">0.5</span> * w</span><br><span class="line">    y1 = cy - <span class="number">0.5</span> * h</span><br><span class="line">    x2 = cx + <span class="number">0.5</span> * w</span><br><span class="line">    y2 = cy + <span class="number">0.5</span> * h</span><br><span class="line">    boxes = torch.stack((x1, y1, x2, y2), axis=-<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">return</span> boxes</span><br></pre></td></tr></table></figure>
+
+<h1 id="锚框"><a href="#锚框" class="headerlink" title="锚框"></a>锚框</h1><p>在目标检测算法中，通常会在输入图像中采样大量的<strong>区域</strong>，然后判断这些<strong>区域</strong>中是否包含我们感兴趣的目标，并且调整<strong>区域边界</strong>，从而更准确地预测目标的真实边界框(<em>ground-truth bounding box</em>)。</p>
+<p>在后续，介绍的不同模型中，使用的区域采样方法可能不同，现在先介绍其中一种方法：以每一个像素为中心，生成多个缩放比(<em>scale</em>)和宽高比(<em>aspect ratio</em>)不同的边界框。这些边界框称为锚框(<em>anchor box</em>)。</p>
+<h2 id="生成多个锚框"><a href="#生成多个锚框" class="headerlink" title="生成多个锚框"></a>生成多个锚框</h2><p>对于锚框的生成方法，我目前不打算具体的深入了解。只需了解大致方法。</p>
+<p>在《动手学深度学习》一书中，李沐老师所述方法为：以图像的每个像素为重心，生成不同形状的锚框：缩放比为$s∈(0,1]$，宽高比为$r&gt;0$。 那么锚框的宽度和高度分别是$ℎs\sqrt r$和$ℎs&#x2F;\sqrt r$。 请注意，当中心位置给定时，已知宽和高的锚框是确定的。</p>
+<p>要生成多个不同形状的锚框，让我们设置许多缩放比（scale）取值$s_{1},…,s_{n}$和许多宽高比（aspect ratio）取值$r_{1},…,r_{m}$。</p>
+<p>当使用这些比例和长宽比的所有组合以每个像素为中心时，输入图像将总共有$wℎnm$个锚框。 尽管这些锚框可能会覆盖所有真实边界框，但计算复杂性很容易过高。</p>
+<p> 在实践中，我们只考虑包含$s_{1}$或$r_{1}$的组合：</p>
+<p>$(s_{1},r_{1}),(s_{1},r_{2}),…,(s_{1},r_{m}),(s_{2},r_{1}),(s_{3},r_{1}),…,(s_{n},r_{1})$</p>
+<p>也就是说，以同一像素为中心的锚框的数量是$n+m−1$。 对于整个输入图像，将共生成$wℎ(n+m−1)$个锚框。(其实感觉还是很多)</p>
+<h2 id="交并比"><a href="#交并比" class="headerlink" title="交并比"></a>交并比</h2><p>我们要如何衡量，某一个<em>anchor</em>是否很好覆盖了图像中的目标位置呢？也就是说我们需要衡量<em>anchor</em>和<em>ground-truth bounding box</em>之间的相似性，杰卡德系数(<em>Jaccard</em>)可以衡量两组之间的相似性。</p>
+<p>给定集合A,B他们的杰卡德系数为他们交集的大小除以他们并集的大小。<br>$$<br>J(A,B)&#x3D;\frac{A\cap B}{A\cup B}<br>$$<br>于两个边界框，它们的杰卡德系数通常称为交并比(<em>intersection over union, IoU</em>)，即两个边界框相交面积与相并面积之比。</p>
+<h2 id="使用非极大值抑制预测边界框"><a href="#使用非极大值抑制预测边界框" class="headerlink" title="使用非极大值抑制预测边界框"></a>使用非极大值抑制预测边界框</h2><p>在预测时，我们先为图像生成多个<strong>锚框</strong>，再为这些锚框<strong>一一预测类别和偏移量</strong>。 一个预测好的边界框则<strong>根据其中某个带有预测偏移量的锚框而生成</strong>。 </p>
+<p>当有许多锚框时，可能会输出许多相似的具有明显重叠的预测边界框，都围绕着同一目标。 为了简化输出，我们可以使用<strong>非极大值抑制</strong>(<em>non-maximum suppression,NMS</em>)合并属于同一目标的类似的预测边界框。</p>
+<p>其主要工作原理如下：</p>
+<p>对于每一个预测边界框B，目标检测模型会计算每个类别的预测概率。假设最大的预测概率为p，则该概率所对应的类别b即为其预测的类别。p称为预测边界框B的置信度。</p>
+<p>在同一张图像中，所有预测的非背景边界框都会按照置信度降序排序，生成列表L。然后对L操作。</p>
+<ol>
+<li>从L中选择置信度最高的预测边界框$B_{1}$作为基准，然后将所有与$B_{1}$的IoU值超过阈值$\epsilon$的非基准预测边界框从L中移除。那些<strong>非极大值置信度</strong>的边界框被抑制了。</li>
+<li>从L中选取置信度第二高的预测边界框$B_{2}$作为又一个基准，然后将所有与$B_{2}$的IoU大于$\epsilon$的非基准预测边界框从L中移除。</li>
+<li>重复上述过程，知道L中所有的预测边界框都层被用过，当作基准。此时，L中任意一堆预测边界框的IoU都小于阈值$\epsilon$。所以没有一对边界框过于相似</li>
+<li>输出列表L中的所有预测边界框。</li>
+</ol>
+</div></section><div id="reward-container"><span class="hty-icon-button button-glow" id="reward-button" title="打赏" onclick="var qr = document.getElementById(&quot;qr&quot;); qr.style.display = (qr.style.display === &quot;none&quot;) ? &quot;block&quot; : &quot;none&quot;;"><span class="icon iconify" data-icon="ri:hand-coin-line"></span></span><div id="reward-comment">I'm so cute. Please give me money.</div></div><ul class="post-copyright"><li class="post-copyright-author"><strong>本文作者：</strong>a碟</li><li class="post-copyright-link"><strong>本文链接：</strong><a href="https://a-die.github.io/2023/09/12/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/" title="目标检测基本概念">https://a-die.github.io/2023/09/12/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/</a></li><li class="post-copyright-license"><strong>版权声明：</strong>本博客所有文章除特别声明外，均默认采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="noopener" title="CC BY-NC-SA 4.0 "><span class="icon iconify" data-icon="ri:creative-commons-line"></span><span class="icon iconify" data-icon="ri:creative-commons-by-line"></span><span class="icon iconify" data-icon="ri:creative-commons-nc-line"></span><span class="icon iconify" data-icon="ri:creative-commons-sa-line"></span></a> 许可协议。</li></ul></article><div class="post-nav"><div class="post-nav-item"></div><div class="post-nav-item"><a class="post-nav-next" href="/2023/08/14/%E3%80%90LeetCode%E5%91%A8%E8%B5%9B%E3%80%91LeetCode%E7%AC%AC358%E5%9C%BA%E5%91%A8%E8%B5%9B/" rel="next" title="【LeetCode周赛】LeetCode第358场周赛"><span class="post-nav-text">【LeetCode周赛】LeetCode第358场周赛</span><span class="icon iconify" data-icon="ri:arrow-right-s-line"></span></a></div></div></div><div class="hty-card" id="comment"></div></main><footer class="sidebar-translate" id="footer"><div class="copyright"><span>&copy; 2022 – 2023 </span><span class="with-love" id="animate"><span class="icon iconify" data-icon="ri:cloud-line"></span></span><span class="author"> a碟</span></div><div class="powered"><span>由 <a href="https://hexo.io" target="_blank" rel="noopener">Hexo</a> 驱动 v6.3.0</span><span class="footer-separator">|</span><span>主题 - <a rel="noopener" href="https://github.com/YunYouJun/hexo-theme-yun" target="_blank"><span>Yun</span></a> v1.10.9</span></div><div class="live-time"><span>本博客已运行</span><span id="display_live_time"></span><span class="moe-text">(●'◡'●)</span><script>function blog_live_time() {
+  setTimeout(blog_live_time, 1000);
+  const start = new Date('2022-11-08T22:07:00');
+  const now = new Date();
+  const timeDiff = (now.getTime() - start.getTime());
+  const msPerMinute = 60 * 1000;
+  const msPerHour = 60 * msPerMinute;
+  const msPerDay = 24 * msPerHour;
+  const passDay = Math.floor(timeDiff / msPerDay);
+  const passHour = Math.floor((timeDiff % msPerDay) / 60 / 60 / 1000);
+  const passMinute = Math.floor((timeDiff % msPerHour) / 60 / 1000);
+  const passSecond = Math.floor((timeDiff % msPerMinute) / 1000);
+  display_live_time.innerHTML = ` ${passDay} 天 ${passHour} 小时 ${passMinute} 分 ${passSecond} 秒`;
+}
+blog_live_time();
+</script></div></footer></div><a class="hty-icon-button" id="back-to-top" aria-label="back-to-top" href="#"><span class="icon iconify" data-icon="ri:arrow-up-s-line"></span><svg class="progress-circle-container" viewBox="0 0 100 100"><circle class="progress-circle" id="progressCircle" cx="50" cy="50" r="48" fill="none" stroke="#0078E7" stroke-width="2" stroke-linecap="round"></circle></svg></a><!-- hexo injector body_end start --><script src="https://cdn.jsdelivr.net/npm/hexo-widget-tree@0.2.2/js/index.js"></script><div id="widget-tree">
+      <ul>
+      <li class="tree-list-item">
+        <i class="toggle-post-icon gg-folder-add"></i>
+        <a class="tree-list-link" href="/categories/%E6%80%BB%E7%BB%93/">
+          总结
+        </a>
+      <span class="tree-list-count">2</span><ul class="tree-list-children"><li class="tree-list-item"><a class="tree-list-post-link" href="/2022/11/11/2022%E5%9B%9B%E9%9D%9E%E8%AE%A1%E7%AE%97%E6%9C%BA%E4%BF%9D%E7%A0%94%E7%BB%8F%E9%AA%8C/" title="2022四非计算机保研经验"><i class="post-icon gg-file-document"></i>2022四非计算机保研经验</a></li><li class="tree-list-item"><a class="tree-list-post-link" href="/2022/11/10/%E7%AC%AC%E5%8D%81%E4%B8%89%E5%B1%8A%E6%9C%8D%E5%8A%A1%E5%A4%96%E5%8C%85%E5%88%9B%E6%96%B0%E5%88%9B%E4%B8%9A%E5%A4%A7%E8%B5%9B%E6%80%BB%E7%BB%93/" title="第十三届服务外包创新创业大赛总结&经验分享"><i class="post-icon gg-file-document"></i>第十三届服务外包创新创业大赛总结&经验分享</a></li></ul></li>
+      <li class="tree-list-item">
+        <i class="toggle-post-icon gg-folder-add"></i>
+        <a class="tree-list-link" href="/categories/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/">
+          目标检测
+        </a>
+      <span class="tree-list-count">1</span><ul class="tree-list-children"><li class="tree-list-item"><a class="tree-list-post-link" href="/2023/09/12/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/" title="目标检测基本概念"><i class="post-icon gg-file-document"></i>目标检测基本概念</a></li></ul></li>
+      <li class="tree-list-item">
+        <i class="toggle-post-icon gg-folder-add"></i>
+        <a class="tree-list-link" href="/categories/LeetCode/">
+          LeetCode
+        </a>
+      <span class="tree-list-count">1</span><ul class="tree-list-children"><li class="tree-list-item"><a class="tree-list-post-link" href="/2023/08/14/%E3%80%90LeetCode%E5%91%A8%E8%B5%9B%E3%80%91LeetCode%E7%AC%AC358%E5%9C%BA%E5%91%A8%E8%B5%9B/" title="【LeetCode周赛】LeetCode第358场周赛"><i class="post-icon gg-file-document"></i>【LeetCode周赛】LeetCode第358场周赛</a></li></ul></li></ul>
+        <div id="widget-tree-button">
+          <i class="gg-chevron-right"></i>
+        </div>
+      </div><!-- hexo injector body_end end --></body></html>
