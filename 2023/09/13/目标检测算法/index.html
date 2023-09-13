@@ -1,0 +1,140 @@
+<!DOCTYPE html><html lang="zh-CN"><head><!-- hexo injector head_begin start --><link href="https://cdn.jsdelivr.net/npm/hexo-widget-tree@0.2.2/css/index.css" rel="stylesheet"/><!-- hexo injector head_begin end --><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#0078E7"><meta name="author" content="a碟"><meta name="copyright" content="a碟"><meta name="generator" content="Hexo 6.3.0"><meta name="theme" content="hexo-theme-yun"><title>a碟のBlog</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@900&amp;display=swap" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/star-markdown-css@0.4.1/dist/yun/yun-markdown.min.css"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/prism-theme-vars/base.css"><script src="https://fastly.jsdelivr.net/npm/scrollreveal/dist/scrollreveal.min.js" defer></script><script>function initScrollReveal() {
+  [".post-card",".markdown-body img"].forEach((target)=> {
+    ScrollReveal().reveal(target);
+  })
+}
+document.addEventListener("DOMContentLoaded", initScrollReveal);
+document.addEventListener("pjax:success", initScrollReveal);
+</script><link rel="icon" type="image/svg+xml" href="/yun.svg"><link rel="mask-icon" href="/yun.svg" color="#0078E7"><link rel="preload" href="/css/hexo-theme-yun.css" as="style"><link rel="prefetch" href="/js/sidebar.js" as="script"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fastly.jsdelivr.net/npm/" crossorigin><script id="yun-config">
+    window.Yun = {}
+    window.CONFIG = {"hostname":"a-die.github.io","root":"/","title":"a碟のBlog","version":"1.10.9","mode":"auto","copycode":true,"page":{"isPost":true},"i18n":{"placeholder":"搜索...","empty":"找不到您查询的内容: ${query}","hits":"找到 ${hits} 条结果","hits_time":"找到 ${hits} 条结果（用时 ${time} 毫秒）"},"anonymous_image":"https://cdn.yunyoujun.cn/img/avatar/none.jpg","say":{"api":"https://el-bot-api.vercel.app/api/words/young"},"fireworks":{"colors":null},"vendors":{"host":"https://fastly.jsdelivr.net/npm/","darken":"https://fastly.jsdelivr.net/npm/darken@1.5.0"}};
+  </script><link rel="stylesheet" href="/css/hexo-theme-yun.css"><script src="/js/hexo-theme-yun.js" type="module"></script><meta name="description" content="区域卷积神经网络(R-CNN)系列区域卷积神经网络(region-based CNN或regions with CNN features，R-CNN) 快速的R-CNN(Fast R-CNN) 更快的R-CNN(Faster R-CNN) 掩码R-CNN(Mask R-CNN) R-CNNR-CNN首先从输入图像中选取若干个(如2000个)提议区域(如锚框)，标注他们的类别和边界框。然后，用CNN">
+<meta property="og:type" content="article">
+<meta property="og:title" content="a碟のBlog">
+<meta property="og:url" content="https://a-die.github.io/2023/09/13/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%AE%97%E6%B3%95/index.html">
+<meta property="og:site_name" content="a碟のBlog">
+<meta property="og:description" content="区域卷积神经网络(R-CNN)系列区域卷积神经网络(region-based CNN或regions with CNN features，R-CNN) 快速的R-CNN(Fast R-CNN) 更快的R-CNN(Faster R-CNN) 掩码R-CNN(Mask R-CNN) R-CNNR-CNN首先从输入图像中选取若干个(如2000个)提议区域(如锚框)，标注他们的类别和边界框。然后，用CNN">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://a-die.github.io/2023/09/13/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%AE%97%E6%B3%95/r-cnn.svg">
+<meta property="og:image" content="https://a-die.github.io/2023/09/13/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%AE%97%E6%B3%95/fast-rcnn.svg">
+<meta property="og:image" content="https://a-die.github.io/2023/09/13/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%AE%97%E6%B3%95/roi.svg">
+<meta property="og:image" content="https://a-die.github.io/2023/09/13/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%AE%97%E6%B3%95/faster-rcnn.svg">
+<meta property="og:image" content="https://a-die.github.io/2023/09/13/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%AE%97%E6%B3%95/mask-rcnn.svg">
+<meta property="og:image" content="https://a-die.github.io/2023/09/13/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%AE%97%E6%B3%95/ssd.svg">
+<meta property="article:published_time" content="2023-09-13T13:05:52.369Z">
+<meta property="article:modified_time" content="2023-09-13T13:06:44.750Z">
+<meta property="article:author" content="a碟">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://a-die.github.io/2023/09/13/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%AE%97%E6%B3%95/r-cnn.svg"><script>(function() {
+  if (CONFIG.mode !== 'auto') return
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+  const setting = localStorage.getItem('darken-mode') || 'auto'
+  if (setting === 'dark' || (prefersDark && setting !== 'light'))
+    document.documentElement.classList.toggle('dark', true)
+})()</script></head><body><script src="https://code.iconify.design/2/2.1.1/iconify.min.js"></script><script>// Define global variable
+IconifyProviders = {
+  // Empty prefix: overwrite default API provider configuration
+  '': {
+    // Use custom API first, use Iconify public API as backup
+    resources: [
+        'https://api.iconify.design',
+    ],
+    // Wait for 1 second before switching API hosts
+    rotate: 1000,
+  },
+};</script><script defer src="https://fastly.jsdelivr.net/npm/animejs@latest"></script><script defer src="/js/ui/fireworks.js" type="module"></script><canvas class="fireworks"></canvas><div class="container"><a class="sidebar-toggle hty-icon-button" id="menu-btn"><div class="hamburger hamburger--spin" type="button"><span class="hamburger-box"><span class="hamburger-inner"></span></span></div></a><div class="sidebar-toggle sidebar-overlay"></div><aside class="sidebar"><script src="/js/sidebar.js" type="module"></script><ul class="sidebar-nav"><li class="sidebar-nav-item sidebar-nav-toc hty-icon-button sidebar-nav-active" data-target="post-toc-wrap" title="文章目录"><span class="icon iconify" data-icon="ri:list-ordered"></span></li><li class="sidebar-nav-item sidebar-nav-overview hty-icon-button" data-target="site-overview-wrap" title="站点概览"><span class="icon iconify" data-icon="ri:passport-line"></span></li></ul><div class="sidebar-panel" id="site-overview-wrap"><div class="site-info fix-top"><a class="site-author-avatar" href="/about/" title="a碟"><img width="96" loading="lazy" src="/img/head.jpg" alt="a碟"><span class="site-author-status" title="不想上学">😭</span></a><div class="site-author-name"><a href="/about/">a碟</a></div><span class="site-name">a碟のBlog</span><sub class="site-subtitle"></sub><div class="site-description"></div></div><nav class="site-state"><a class="site-state-item hty-icon-button icon-home" href="/" title="首页"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:home-4-line"></span></span></a><div class="site-state-item"><a href="/archives/" title="归档"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:archive-line"></span></span><span class="site-state-item-count">6</span></a></div><div class="site-state-item"><a href="/categories/" title="分类"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:folder-2-line"></span></span><span class="site-state-item-count">3</span></a></div><div class="site-state-item"><a href="/tags/" title="标签"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:price-tag-3-line"></span></span><span class="site-state-item-count">7</span></a></div><a class="site-state-item hty-icon-button" target="_blank" rel="noopener" href="https://yun.yunyoujun.cn" title="文档"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:settings-line"></span></span></a></nav><hr style="margin-bottom:0.5rem"><div class="links-of-author"><a class="links-of-author-item hty-icon-button" rel="noopener" href="https://github.com/a-die" title="GitHub" target="_blank" style="color:#6e5494"><span class="icon iconify" data-icon="ri:github-line"></span></a><a class="links-of-author-item hty-icon-button" rel="noopener" href="https://www.zhihu.com/people/chi-chen-2-53" title="知乎" target="_blank" style="color:#0084FF"><span class="icon iconify" data-icon="ri:zhihu-line"></span></a><a class="links-of-author-item hty-icon-button" rel="noopener" href="https://space.bilibili.com/23420011" title="哔哩哔哩" target="_blank" style="color:#FF8EB3"><span class="icon iconify" data-icon="ri:bilibili-line"></span></a><a class="links-of-author-item hty-icon-button" rel="noopener" href="993204079@qq.com" title="E-Mail" target="_blank" style="color:#8E71C1"><span class="icon iconify" data-icon="ri:mail-line"></span></a></div><hr style="margin:0.5rem 1rem"><div class="links"><a class="links-item hty-icon-button" href="/links/" title="我的小伙伴们" style="color:dodgerblue"><span class="icon iconify" data-icon="ri:genderless-line"></span></a></div><br><a class="links-item hty-icon-button" id="toggle-mode-btn" href="javascript:;" title="Mode" style="color: #f1cb64"><span class="icon iconify" data-icon="ri:contrast-2-line"></span></a></div><div class="sidebar-panel sidebar-panel-active" id="post-toc-wrap"><div class="post-toc"><div class="post-toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8C%BA%E5%9F%9F%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C-R-CNN-%E7%B3%BB%E5%88%97"><span class="toc-number">1.</span> <span class="toc-text">区域卷积神经网络(R-CNN)系列</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#R-CNN"><span class="toc-number">1.1.</span> <span class="toc-text">R-CNN</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Fast-R-CNN"><span class="toc-number">1.2.</span> <span class="toc-text">Fast R-CNN</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Faster-R-CNN"><span class="toc-number">1.3.</span> <span class="toc-text">Faster R-CNN</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Mask-R-CNN"><span class="toc-number">1.4.</span> <span class="toc-text">Mask R-CNN</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%95%E5%8F%91%E5%A4%9A%E6%A1%86%E6%A3%80%E6%B5%8B-SSD"><span class="toc-number">2.</span> <span class="toc-text">单发多框检测(SSD)</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A8%A1%E5%9E%8B"><span class="toc-number">2.1.</span> <span class="toc-text">模型</span></a></li></ol></li></ol></div></div></div></aside><main class="sidebar-translate" id="content"><div id="post"><article class="hty-card post-block" itemscope itemtype="https://schema.org/Article" style="--smc-primary:#0078E7;"><link itemprop="mainEntityOfPage" href="https://a-die.github.io/2023/09/13/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%AE%97%E6%B3%95/"><span hidden itemprop="author" itemscope itemtype="https://schema.org/Person"><meta itemprop="name" content="a碟"><meta itemprop="description"></span><span hidden itemprop="publisher" itemscope itemtype="https://schema.org/Organization"><meta itemprop="name" content="a碟のBlog"></span><header class="post-header"><h1 class="post-title" itemprop="name headline"></h1><div class="post-meta"><div class="post-time" style="display:block"><span class="post-meta-item-icon"><span class="icon iconify" data-icon="ri:calendar-line"></span></span> <time title="创建时间：2023-09-13 21:05:52" itemprop="dateCreated datePublished" datetime="2023-09-13T21:05:52+08:00">2023-09-13</time></div><span class="post-count"><span class="post-symbolcount"><span class="post-meta-item-icon" title="本文字数"><span class="icon iconify" data-icon="ri:file-word-line"></span></span> <span title="本文字数">2.2k</span><span class="post-meta-divider">-</span><span class="post-meta-item-icon" title="阅读时长"><span class="icon iconify" data-icon="ri:timer-line"></span></span> <span title="阅读时长">7m</span></span></span><div class="post-classify"></div></div></header><section class="post-body" itemprop="articleBody"><div class="post-content markdown-body"><h1 id="区域卷积神经网络-R-CNN-系列"><a href="#区域卷积神经网络-R-CNN-系列" class="headerlink" title="区域卷积神经网络(R-CNN)系列"></a>区域卷积神经网络(R-CNN)系列</h1><p>区域卷积神经网络(<em>region-based CNN</em>或<em>regions with CNN features，R-CNN</em>)</p>
+<p>快速的R-CNN(<em>Fast R-CNN</em>)</p>
+<p>更快的R-CNN(<em>Faster R-CNN</em>)</p>
+<p>掩码R-CNN(<em>Mask R-CNN</em>)</p>
+<h2 id="R-CNN"><a href="#R-CNN" class="headerlink" title="R-CNN"></a>R-CNN</h2><p>R-CNN首先从输入图像中选取若干个(如2000个)<strong>提议区域</strong>(如<strong>锚框</strong>)，标注他们的类别和边界框。然后，用CNN对每个提议区域提取<strong>特征</strong>。然后用每个提议区域的特征来预测类别和边界框。</p>
+<p><img src="/2023/09/13/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%AE%97%E6%B3%95/r-cnn.svg" alt="../_images/r-cnn.svg" loading="lazy"></p>
+<p>如何选取一开始的提议区域，就是使用<strong>选择性搜索</strong>这样一种办法。</p>
+<p>具体步骤如下：</p>
+<ol>
+<li>对输入图像使用<strong>选择性搜索</strong>来得到多个高质量的提议区域(锚框)。这些提议区域通常是在多个尺度下选取的，具有不同的形状和大小(如之前所看到的锚框的选取方法)。每个提议区域都要被标注类别和真实边界框(就是<strong>打上label</strong>)。</li>
+<li>然后选择一个预训练的CNN(在输出层之前截断)。将每个提议区域变形为网络需要的输入尺寸，然后通过CNN抽取特征。</li>
+<li>将每个提议区域的特征连同其<strong>标注的类别</strong>作为一个样本。训练多个支持向量机SVM对目标进行分类，其中<strong>每个SVM</strong>用来判断的是样本是否属于<strong>某一个类别</strong>。</li>
+<li>将每个提议区域的特征连同其<strong>标注的边界框</strong>作为一个样本，训练<strong>线性回归模型</strong>来预测<strong>真实边界框</strong>。</li>
+</ol>
+<p>不难想到，对每一个图像，我们都可能选取出上千个提议区域，这需要的是上千次的CNN前向传播来提取特征，从而执行目标检测。计算量过于庞大。</p>
+<h2 id="Fast-R-CNN"><a href="#Fast-R-CNN" class="headerlink" title="Fast R-CNN"></a>Fast R-CNN</h2><p>R-CNN之所以慢，是因为其对每一个提议区域，CNN的前向传播特征提取是独立的，没有共享计算。可能存在多个提议区域<strong>重叠</strong>，<strong>独立的特征抽取</strong>会导致<strong>重复的计算</strong>。</p>
+<p>Fast R-CNN对R-CNN的主要改进之一就是仅仅在<strong>整张图象</strong>上执行卷积神经网络的前向传播，即提取特征。</p>
+<p><img src="/2023/09/13/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%AE%97%E6%B3%95/fast-rcnn.svg" alt="../_images/fast-rcnn.svg" loading="lazy"></p>
+<p>主要步骤如下：</p>
+<ol>
+<li><p>和R-CNN相比，Fast R-CNN用来提取特征的CNN的输入是<strong>整张图象</strong>，并不是各个提议区域。而且，这个提取特征的网络将参与训练，设输入为一张图像，CNN的输出的形状记为$1 \times c \times h_{1} \times \omega_{1}$。</p>
+</li>
+<li><p>在选择性搜索之后，得到多个高质量的提议区域(锚框)，假设生成了n个提议区域。这些形状各异的提议区域在<strong>卷积神经网络的输出</strong>上分别标出了形状各异的兴趣区域(比如按照比例在原图上的锚框映射到输出特征上)。</p>
+<p>然后，这些感兴趣的区域需要进一步<strong>抽取出形状相同的特征</strong>(比如需要指定高度$h_{2}$和宽度$\omega_{2}$)，以便于连结后输出。Fast R-CNN使用的方法是引入<strong>兴趣区域汇聚层(RoI pooling)<strong>：将</strong>CNN的输出(特征)<strong>和</strong>提议区域</strong>作为输入，输出连结后的各个提议区域抽取的特征，形状为$n \times c \times h_{2} \times \omega_{2}$。</p>
+</li>
+<li><p>通过全连接层将输出的形状变为$n \times d$，其中超参数$d$取决于模型设计。</p>
+</li>
+<li><p>预测n个<strong>提议区域</strong>中<strong>每个区域的类别和边界框</strong>。即在预测类别和边界框时，将全连接层的输出分别转换为形状为$n \times q$(q是类别的数量)的输出和形状为$n \times 4$的输出(一个输出的是类别概率，一个输出的是边界框的坐标表示)。其中预测类别时使用softmax回归。</p>
+</li>
+</ol>
+<p>关于兴趣汇聚层(RoI pooling)，具体做法是：</p>
+<p>指定每个区域的高和宽分别为$h_{2}$和$\omega_{2}$。对于任何形状为$h \times \omega$的兴趣区域窗口，都将被划分为$h_{2} \times \omega_{2}$的子窗口网络。每个子窗口的大小约为$(h&#x2F;h_{2}) \times (\omega &#x2F; \omega_{2})$，向上取整，其中每个子窗口中的最大元素作为该子窗口的输出。因此，RoI pooling可以从形状各异的兴趣区域中抽取出形状相同的特征。</p>
+<p><img src="/2023/09/13/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%AE%97%E6%B3%95/roi.svg" alt="../_images/roi.svg" loading="lazy"></p>
+<h2 id="Faster-R-CNN"><a href="#Faster-R-CNN" class="headerlink" title="Faster R-CNN"></a>Faster R-CNN</h2><p>为了精确检测目标结果，Fast R-CNN模型需要在<strong>选择性搜索</strong>中生成大量的提议区域。Faster R-CNN则提出将选择性搜索替换为<strong>区域提议网络</strong>(<em>region proposal netword,rpn</em>)。从而减少提议区域的生成数量，并且保证目标检测的精度。</p>
+<p>实际上就是将获得提议区域的过程变成了使用神经网络来训练获得提议区域的过程。</p>
+<p><img src="/2023/09/13/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%AE%97%E6%B3%95/faster-rcnn.svg" alt="../_images/faster-rcnn.svg" loading="lazy"></p>
+<p>与Fast R-CNN相比，Faster R-CNN只是将生成提议区域的方法从<strong>选择性搜索</strong>改为了<strong>区域提议网络</strong>，模型其余部分保持不变。(可以说是多了一个粗糙的对锚框进行分类和预测的过程)</p>
+<p>区域提议网络操作步骤如下：</p>
+<ol>
+<li>使用填充为1的$3 \times 3$的卷积层变换卷积神经网络的输出，并将通道数记为c。这样，卷积神经网络为图像抽取的特征图中的每个单元均得到一个长度为c的新特征。</li>
+<li>以特征图的每个像素为中心，生成多个不同大小和宽高比的锚框并标注它们(也可以使用选择性搜索方法来生成)。</li>
+<li>使用锚框中心单元长度为c的特征，分别<strong>预测该锚框的二元类别</strong>(含目标还是背景)<strong>和边界框</strong>。</li>
+<li>使用非极大值抑制，从预测类别为目标的预测边界框中<strong>移除相似的结果</strong>。最终输出的预测边界框是兴趣区域汇聚层所需的提议区域。</li>
+</ol>
+<p>区域提议网络rpn是和整个模型一起训练得到的。所以，Faster R-CNN的目标函数不仅包括目标检测中的类别和边界框的预测，还包括区域提议网络锚框的二元类别和边界框预测。因此，其还可以<strong>学到如何生成高质量的提议区域</strong>。</p>
+<h2 id="Mask-R-CNN"><a href="#Mask-R-CNN" class="headerlink" title="Mask R-CNN"></a>Mask R-CNN</h2><p>如果在训练集中还标注了每个目标在图像上的<strong>像素级的位置</strong>，那么Mask R-CNN能够有效利用这些详尽标注信息进一步提升目标检测的精度。</p>
+<p><img src="/2023/09/13/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%AE%97%E6%B3%95/mask-rcnn.svg" alt="../_images/mask-rcnn.svg" loading="lazy"></p>
+<p>Mask R-CNN是基于Faster R-CNN修改而来。</p>
+<p>其将兴趣区域汇聚层换成了兴趣区域对齐层(主要区别就在RoI pooling是可能会将兴趣区域改变形状的，而RoI Align不会，在无法整除时，它会将一部分区域拆分出来)。使用双线性插值(<em>bilinear interpolation</em>)来保留<strong>特征图上的空间信息</strong>，从而更适于像素级预测。 </p>
+<p>兴趣区域对齐层的输出包含了所有与兴趣区域的形状相同的特征图。 它们不仅被用于预测每个兴趣区域的类别和边界框，还通过额外的全卷积网络预测目标的<strong>像素级位置</strong>。</p>
+<h1 id="单发多框检测-SSD"><a href="#单发多框检测-SSD" class="headerlink" title="单发多框检测(SSD)"></a>单发多框检测(SSD)</h1><h2 id="模型"><a href="#模型" class="headerlink" title="模型"></a>模型</h2><p><img src="/2023/09/13/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%AE%97%E6%B3%95/ssd.svg" alt="../_images/ssd.svg" loading="lazy"></p>
+<p>此模型主要由<strong>基础网络</strong>组成，其后是几个<strong>多尺度特征块</strong>。 基本网络用于从输入图像中提取特征，因此它可以使用<strong>深度卷积神经网络</strong>。 </p>
+<p>单发多框检测论文中选用了在分类层之前截断的VGG (<a target="_blank" rel="noopener" href="https://zh-v2.d2l.ai/chapter_references/zreferences.html#id98">Liu <em>et al.</em>, 2016</a>)，现在也常用ResNet替代。 </p>
+<p>我们可以设计基础网络，使它输出的高和宽较大。 这样一来，基于该特征图生成的锚框数量较多，可以用来检测尺寸较小的目标。 </p>
+<p>接下来的每个<strong>多尺度特征块</strong>将上一层提供的特征图的<strong>高和宽缩小</strong>（如减半），并使特征图中每个单元在<strong>输入图像上的感受野变得更广阔</strong>。</p>
+<p>接近图顶部的多尺度特征图较小，但是其具有较大的感受野，所以适合检测较少但<strong>较大</strong>的物体。</p>
+<p>通过<strong>多尺度特征块</strong>，单发多框检测生成不同大小的锚框，通过预测边界框的类别和偏移量来检测<strong>大小不同</strong>的目标。</p>
+</div></section><div id="reward-container"><span class="hty-icon-button button-glow" id="reward-button" title="打赏" onclick="var qr = document.getElementById(&quot;qr&quot;); qr.style.display = (qr.style.display === &quot;none&quot;) ? &quot;block&quot; : &quot;none&quot;;"><span class="icon iconify" data-icon="ri:hand-coin-line"></span></span><div id="reward-comment">I'm so cute. Please give me money.</div></div><ul class="post-copyright"><li class="post-copyright-author"><strong>本文作者：</strong>a碟</li><li class="post-copyright-link"><strong>本文链接：</strong><a href="https://a-die.github.io/2023/09/13/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%AE%97%E6%B3%95/" title="">https://a-die.github.io/2023/09/13/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%AE%97%E6%B3%95/</a></li><li class="post-copyright-license"><strong>版权声明：</strong>本博客所有文章除特别声明外，均默认采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="noopener" title="CC BY-NC-SA 4.0 "><span class="icon iconify" data-icon="ri:creative-commons-line"></span><span class="icon iconify" data-icon="ri:creative-commons-by-line"></span><span class="icon iconify" data-icon="ri:creative-commons-nc-line"></span><span class="icon iconify" data-icon="ri:creative-commons-sa-line"></span></a> 许可协议。</li></ul></article><div class="post-nav"><div class="post-nav-item"></div><div class="post-nav-item"><a class="post-nav-next" href="/2023/09/12/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/" rel="next" title="目标检测基本概念"><span class="post-nav-text">目标检测基本概念</span><span class="icon iconify" data-icon="ri:arrow-right-s-line"></span></a></div></div></div><div class="hty-card" id="comment"></div></main><footer class="sidebar-translate" id="footer"><div class="copyright"><span>&copy; 2022 – 2023 </span><span class="with-love" id="animate"><span class="icon iconify" data-icon="ri:cloud-line"></span></span><span class="author"> a碟</span></div><div class="powered"><span>由 <a href="https://hexo.io" target="_blank" rel="noopener">Hexo</a> 驱动 v6.3.0</span><span class="footer-separator">|</span><span>主题 - <a rel="noopener" href="https://github.com/YunYouJun/hexo-theme-yun" target="_blank"><span>Yun</span></a> v1.10.9</span></div><div class="live-time"><span>本博客已运行</span><span id="display_live_time"></span><span class="moe-text">(●'◡'●)</span><script>function blog_live_time() {
+  setTimeout(blog_live_time, 1000);
+  const start = new Date('2022-11-08T22:07:00');
+  const now = new Date();
+  const timeDiff = (now.getTime() - start.getTime());
+  const msPerMinute = 60 * 1000;
+  const msPerHour = 60 * msPerMinute;
+  const msPerDay = 24 * msPerHour;
+  const passDay = Math.floor(timeDiff / msPerDay);
+  const passHour = Math.floor((timeDiff % msPerDay) / 60 / 60 / 1000);
+  const passMinute = Math.floor((timeDiff % msPerHour) / 60 / 1000);
+  const passSecond = Math.floor((timeDiff % msPerMinute) / 1000);
+  display_live_time.innerHTML = ` ${passDay} 天 ${passHour} 小时 ${passMinute} 分 ${passSecond} 秒`;
+}
+blog_live_time();
+</script></div></footer></div><a class="hty-icon-button" id="back-to-top" aria-label="back-to-top" href="#"><span class="icon iconify" data-icon="ri:arrow-up-s-line"></span><svg class="progress-circle-container" viewBox="0 0 100 100"><circle class="progress-circle" id="progressCircle" cx="50" cy="50" r="48" fill="none" stroke="#0078E7" stroke-width="2" stroke-linecap="round"></circle></svg></a><!-- hexo injector body_end start --><script src="https://cdn.jsdelivr.net/npm/hexo-widget-tree@0.2.2/js/index.js"></script><div id="widget-tree">
+      <ul>
+      <li class="tree-list-item">
+        <i class="toggle-post-icon gg-folder-add"></i>
+        <a class="tree-list-link" href="/categories/%E6%80%BB%E7%BB%93/">
+          总结
+        </a>
+      <span class="tree-list-count">2</span><ul class="tree-list-children"><li class="tree-list-item"><a class="tree-list-post-link" href="/2022/11/11/2022%E5%9B%9B%E9%9D%9E%E8%AE%A1%E7%AE%97%E6%9C%BA%E4%BF%9D%E7%A0%94%E7%BB%8F%E9%AA%8C/" title="2022四非计算机保研经验"><i class="post-icon gg-file-document"></i>2022四非计算机保研经验</a></li><li class="tree-list-item"><a class="tree-list-post-link" href="/2022/11/10/%E7%AC%AC%E5%8D%81%E4%B8%89%E5%B1%8A%E6%9C%8D%E5%8A%A1%E5%A4%96%E5%8C%85%E5%88%9B%E6%96%B0%E5%88%9B%E4%B8%9A%E5%A4%A7%E8%B5%9B%E6%80%BB%E7%BB%93/" title="第十三届服务外包创新创业大赛总结&经验分享"><i class="post-icon gg-file-document"></i>第十三届服务外包创新创业大赛总结&经验分享</a></li></ul></li>
+      <li class="tree-list-item">
+        <i class="toggle-post-icon gg-folder-add"></i>
+        <a class="tree-list-link" href="/categories/LeetCode/">
+          LeetCode
+        </a>
+      <span class="tree-list-count">1</span><ul class="tree-list-children"><li class="tree-list-item"><a class="tree-list-post-link" href="/2023/08/14/%E3%80%90LeetCode%E5%91%A8%E8%B5%9B%E3%80%91LeetCode%E7%AC%AC358%E5%9C%BA%E5%91%A8%E8%B5%9B/" title="【LeetCode周赛】LeetCode第358场周赛"><i class="post-icon gg-file-document"></i>【LeetCode周赛】LeetCode第358场周赛</a></li></ul></li>
+      <li class="tree-list-item">
+        <i class="toggle-post-icon gg-folder-add"></i>
+        <a class="tree-list-link" href="/categories/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/">
+          目标检测
+        </a>
+      <span class="tree-list-count">1</span><ul class="tree-list-children"><li class="tree-list-item"><a class="tree-list-post-link" href="/2023/09/12/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/" title="目标检测基本概念"><i class="post-icon gg-file-document"></i>目标检测基本概念</a></li></ul></li></ul>
+        <div id="widget-tree-button">
+          <i class="gg-chevron-right"></i>
+        </div>
+      </div><!-- hexo injector body_end end --></body></html>
